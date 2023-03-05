@@ -34,7 +34,7 @@ def operation_handler(text,nlp):
   return op
 
 def name_handler(text,nlp,model,tokenizer,contact_list):
-  res = bert_feature_extraction(model,tokenizer,"who all will attend", text)
+  res = bert_feature_extraction(model,tokenizer,"who will attend", text)
   print(res)
 
   if name_matching(res,text) > 60:
@@ -69,7 +69,7 @@ def name_handler(text,nlp,model,tokenizer,contact_list):
   return final_attendees
 
 def location_handler(text,model,tokenizer):
-  res = bert_feature_extraction(model,tokenizer,"where will it happen", text)
+  res = bert_feature_extraction(model,tokenizer,"where is meeting", text)
 
   # failure case
   if name_matching(res,text) > 60 or len(res)>30:
@@ -101,15 +101,6 @@ def replace_all(pattern, repl, string) -> str:
        return string
 
 def date_handler(text,nlp,model,tokenizer):
-
-  compiled = re.compile(re.escape("today"), re.IGNORECASE)
-  text = compiled.sub(str(datetime.today()).split(' ')[0],text)
-
-  compiled = re.compile(re.escape("now"), re.IGNORECASE)
-  text = compiled.sub(str(datetime.today()).split(' ')[0],text)
-
-  compiled = re.compile(re.escape("tomorrow"), re.IGNORECASE)
-  text = compiled.sub(str(datetime.today() + timedelta(days=1)).split(' ')[0],text)
 
   res = bert_feature_extraction(model,tokenizer,"which date is the meeting", text)
 
