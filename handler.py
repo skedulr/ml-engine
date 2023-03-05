@@ -11,6 +11,8 @@ def word_similarity(nlp,w1,w2):
   return tokens[0].similarity(tokens[1])
 
 def name_matching(n1,n2):
+  if n1 is None or n2 is None:
+    return 0
   return fuzz.ratio(n1.lower(), n2.lower())
 
 def operation_handler(text,nlp):
@@ -32,10 +34,11 @@ def operation_handler(text,nlp):
   return op
 
 def name_handler(text,nlp,model,tokenizer,contact_list):
-  res = bert_feature_extraction(model,tokenizer,"who all will be attending", text)
+  res = bert_feature_extraction(model,tokenizer,"who all will attend", text)
+  print(res)
 
   if name_matching(res,text) > 60:
-    return None
+    return []
 
   text_pos = nlp(res)
 
@@ -67,6 +70,7 @@ def name_handler(text,nlp,model,tokenizer,contact_list):
 
 def location_handler(text,model,tokenizer):
   res = bert_feature_extraction(model,tokenizer,"where will it happen", text)
+
   # failure case
   if name_matching(res,text) > 60 or len(res)>30:
     return None
@@ -75,6 +79,7 @@ def location_handler(text,model,tokenizer):
 
 def summary_handler(text,model,tokenizer):
   res = bert_feature_extraction(model,tokenizer,"What is the meeting for", text)
+
   # failure case
   if name_matching(res,text) > 60 or len(res)>50:
     return None
@@ -83,10 +88,10 @@ def summary_handler(text,model,tokenizer):
 
 def summary_handler(text,model,tokenizer):
   res = bert_feature_extraction(model,tokenizer,"What is the meeting topic", text)
-  print("Summary len: {}".format(str(len(res))))
   # failure case
   if name_matching(res,text) > 60 or len(res)>50:
     return None
+
   return res
 
 def replace_all(pattern, repl, string) -> str:
@@ -107,14 +112,19 @@ def date_handler(text,nlp,model,tokenizer):
   text = compiled.sub(str(datetime.today() + timedelta(days=1)).split(' ')[0],text)
 
   res = bert_feature_extraction(model,tokenizer,"which date is the meeting", text)
+
+
   if name_matching(res,text) > 60 or len(res)>50:
     return (None,None)
+
   
   res2 = bert_feature_extraction(model,tokenizer,"how much time after", text)
 
+
   if name_matching(res2,text) > 60 or len(res2)>50:
-    start_date_obj = parse(res)
-    end_date_obj = start_date_obj + timedelta(days=1)
+
+      start_date_obj = parse(res)
+      end_date_obj = start_date_obj + timedelta(days=1)
   else:
     tagged_text = nlp(res2)
     isDay = False
@@ -133,7 +143,7 @@ def date_handler(text,nlp,model,tokenizer):
         elif str(word) == "weeks":
           isDay = True
           delta = delta*7 
-      
+
     if isDay:
       start_date_obj = parse(res) + timedelta(days=delta)
     elif isMonth:
@@ -142,7 +152,8 @@ def date_handler(text,nlp,model,tokenizer):
       start_date_obj = parse(res) + timedelta(years=delta)
     else:
       start_date_obj = parse(res)
-    end_date_obj = start_date_obj + timedelta(days=1)
+    
+  end_date_obj = start_date_obj + timedelta(days=1)
   
   return (start_date_obj.isoformat(),end_date_obj.isoformat())
 

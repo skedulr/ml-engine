@@ -5,7 +5,18 @@ app = Flask(__name__)
 
 @app.route('/parse',methods=['POST'])
 def parse():
-    return meeting_details_parse(request.json["message"],request.json["contact_list"])
+    try:
+        res = meeting_details_parse(request.json["message"],request.json["contact_list"])
+    except:
+        return {
+            "operation": None,
+            "location": None,
+            "attendees": None,
+            "summary":None,
+            "start_date":None,
+            "end_date":None,
+          }
+    return res
 
 if __name__=="__main__":
     app.run(port=5002,debug=True)

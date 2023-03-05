@@ -13,12 +13,16 @@ def bert_feature_extraction(model, tokenizer, question, text):
     sep_idx = input_ids.index(tokenizer.sep_token_id)
     #number of tokens in segment A (question)
     num_seg_a = sep_idx+1
-    #number of tokens in segment B (text)
-    num_seg_b = len(input_ids) - num_seg_a
     
-    #list of 0s and 1s for segment embeddings
-    segment_ids = [0]*num_seg_a + [1]*num_seg_b
-    assert len(segment_ids) == len(input_ids)
+    
+    try:
+        #number of tokens in segment B (text)
+        num_seg_b = len(input_ids) - num_seg_a
+        #list of 0s and 1s for segment embeddings
+        segment_ids = [0]*num_seg_a + [1]*num_seg_b
+        assert len(segment_ids) == len(input_ids)
+    except:
+        return None
     
     #model output using input_ids and segment_ids
     output = model(torch.tensor([input_ids]), token_type_ids=torch.tensor([segment_ids]))
